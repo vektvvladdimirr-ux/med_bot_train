@@ -9,7 +9,7 @@ Original file is located at
 
 #!pip install python-telegram-bot python-dotenv
 
-!pip install python-telegram-bot nest-asyncio
+#!pip install python-telegram-bot nest-asyncio
 
 import os
 import logging
@@ -265,36 +265,36 @@ def main():
         logger.error("TELEGRAM_BOT_TOKEN не установлен")
         return
 
-# Создаем и настраиваем приложение
-application = Application.builder().token(TOKEN).build()
-
-# Добавляем обработчики (автомат для управления многошаговым диалогом)
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('start', start)],
-    states={
-        SELECT_SCALE: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scale)],
-        INPUT_PARAMS: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_parameter)]
-    },
-    fallbacks=[CommandHandler('cancel', cancel)],
-    allow_reentry=True
-)
-
-application.add_handler(conv_handler)
-application.add_error_handler(error_handler)
-
-PORT = int(os.environ.get("PORT", 8443))
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-        logger.info("Запуск в режиме вебхука")
-        application.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=TOKEN,
-            webhook_url=f"https://{RENDER_EXTERNAL_HOSTNAME}/{TOKEN}"
-        )
+    # Создаем и настраиваем приложение
+    application = Application.builder().token(TOKEN).build()
+    
+    # Добавляем обработчики (автомат для управления многошаговым диалогом)
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={
+            SELECT_SCALE: [MessageHandler(filters.TEXT & ~filters.COMMAND, select_scale)],
+            INPUT_PARAMS: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_parameter)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+        allow_reentry=True
+    )
+    
+    application.add_handler(conv_handler)
+    application.add_error_handler(error_handler)
+    
+    PORT = int(os.environ.get("PORT", 8443))
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+            logger.info("Запуск в режиме вебхука")
+            application.run_webhook(
+                listen="0.0.0.0",
+                port=PORT,
+                url_path=TOKEN,
+                webhook_url=f"https://{RENDER_EXTERNAL_HOSTNAME}/{TOKEN}"
+            )
     else:
-        logger.info("Запуск в режиме polling")
-        application.run_polling()
+            logger.info("Запуск в режиме polling")
+            application.run_polling()
 
 if __name__ == '__main__':
     main()
